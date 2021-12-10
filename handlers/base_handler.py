@@ -14,11 +14,13 @@ class BaseHandler(ABC):
         self.message = message
         self.bot = bot
 
-    async def answer(self, message: str, attachment: str = None):
+    async def answer(
+            self, message: str, forward_messages: typing.List[int] = None):
         await self.message.answer(
             random_id=random.randint(-1_000_000, 1_000_000),
             message=message,
-            attachment=attachment
+            forward_messages=forward_messages,
+            disable_mentions=True
         )
 
     @staticmethod

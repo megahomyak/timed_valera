@@ -2,7 +2,7 @@ import asyncio
 import datetime
 import random
 import sys
-from typing import Optional
+from typing import Optional, Dict, List
 
 import loguru
 import vkbottle.bot
@@ -38,22 +38,24 @@ class Bot:
         self.next_question_date = question_date
         self.current_question_info: Optional[CurrentQuestionInfo] = None
         self.commands = handlers_collector
+        self.admin_id_to_question_answer: Dict[int, str] = {}
 
     async def send_to_questions_chat(
-            self, message: str, attachment: str = None):
+            self, message: str, forward_messages: List[int] = None):
         await self.send_to_user(
             peer_id=self.config.questions_chat_id,
             message=message,
-            attachment=attachment
+            forward_messages=forward_messages
         )
 
     async def send_to_user(
-            self, peer_id: int, message: str, attachment: str = None):
+            self, peer_id: int, message: str,
+            forward_messages: List[int] = None):
         await self.vk_client.api.messages.send(
             peer_id=peer_id,
             random_id=random.randint(-1_000_000, 1_000_000),
             message=message,
-            attachment=attachment
+            forward_messages=forward_messages
         )
 
     async def roll_a_question_every_day(self) -> None:
@@ -65,6 +67,7 @@ class Bot:
                 self.db_session.query(models.Question).get(self.question_id)
             )
             if question is None:
+                self.current_question_info = None
                 if self.question_id != self.config.starting_question_id:
                     await self.send_to_questions_chat("Квест завершён!")
                 return
@@ -76,29 +79,41 @@ class Bot:
                 self.next_question_date += datetime.timedelta(days=1)
                 self.question_id += 1
                 await self.send_to_questions_chat(
-                    f"Новый вопрос (№{question.id}): "
-                    f"{question.question_text}",
-                    attachment=",".join(
-                        attachment.attachment_string
-                        for attachment in question.attachments
-                    )
+                    f"Новый вопрос (№{question.id}):",
+                    forward_messages=question.question_message_id
                 )
 
     async def handle_new_message(self, message: vkbottle.bot.Message):
-        if message.text.startswith("/"):
-            text = message.text[1:]
-            for regex, handler_type in self.commands:
-                if (
-                    not handler_type.is_for_admins()
-                    or message.from_id in self.config.admin_ids
-                ):
-                    match = regex.fullmatch(text)
-                    if match:
-                        handler = handler_type(message, self)
-                        await handler.handle_message(*match.groups())
-                        break
-            else:
-                await self.send_to_user(message.peer_id, "Неизвестная команда!")
+        try:
+            question_answer = self.admin_id_to_question_answer[message.from_id]
+        except KeyError:
+            if message.text.startswith("/"):
+                text = message.text[1:]
+                for regex, handler_type in self.commands:
+                    if (
+                        not handler_type.is_for_admins()
+                        or message.from_id in self.config.admin_ids
+                    ):
+                        match = regex.fullmatch(text)
+                        if match:
+                            handler = handler_type(message, self)
+                            await handler.handle_message(*match.groups())
+                            break
+                else:
+                    await self.send_to_user(
+                        message.peer_id, "Неизвестная команда!"
+                    )
+        else:
+            question = models.Question(
+                answer_text=question_answer, question_message_id=message.id
+            )
+            self.db_session.add(question)
+            self.db_session.commit()
+            del self.admin_id_to_question_answer[message.from_id]
+            await self.send_to_user(
+                message.peer_id,
+                f"Вопрос успешно добавлен! (ID: {question.id})"
+            )
 
     async def run(self):
         asyncio.create_task(self.roll_a_question_every_day())
