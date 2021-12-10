@@ -6,6 +6,7 @@ from typing import Optional, Dict, List
 
 import loguru
 import vkbottle.bot
+from sqlalchemy import desc
 from sqlalchemy.orm import Session
 
 import models
@@ -58,6 +59,29 @@ class Bot:
             forward_messages=forward_messages
         )
 
+    async def get_leaderboard(self) -> Optional[str]:
+        users = (
+            self.db_session
+            .query(models.User)
+            .order_by(desc(models.User.vk_id))
+            .order_by(desc(models.User.time_spent_on_solutions_in_seconds))
+            .all()
+        )
+        if users:
+            users_vk_info = await self.vk_client.api.users.get(
+                user_ids=[user.vk_id for user in users]
+            )
+            return "\n".join(
+                f"{user_number}. "
+                f"[id{user_from_vk.id}|{user_from_vk.first_name} "
+                f"{user_from_vk.last_name}] - {user.score} правильных ответов"
+                for user_from_vk, (user_number, user) in zip(
+                    users_vk_info, enumerate(users, start=1)
+                )
+            )
+        else:
+            return None
+
     async def roll_a_question_every_day(self) -> None:
         while True:
             await asyncio.sleep(
@@ -69,7 +93,10 @@ class Bot:
             if question is None:
                 self.current_question_info = None
                 if self.question_id != self.config.starting_question_id:
-                    await self.send_to_questions_chat("Квест завершён!")
+                    await self.send_to_questions_chat(
+                        "Квест завершён! Лидерборд:\n"
+                        + await self.get_leaderboard()
+                    )
                 return
             else:
                 self.current_question_info = CurrentQuestionInfo(

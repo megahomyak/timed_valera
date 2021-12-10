@@ -136,46 +136,34 @@ class AddCommand(AdminsCommandHandler):
 
 @handlers_collector.add(r"команды")
 @handlers_collector.add(r"помощь")
-class GetHelp(AdminsCommandHandler):
+class GetHelp(UsersCommandHandler):
 
     async def handle_message(self) -> None:
-        await self.answer(
-            "/удалить - удалить последний вопрос из списка вопросов\n"
-            "/вопросы - получить список вопросов в формате"
-            "{айди}. {текст сообщения с вопросом} | {ответ}\n"
-            "/вопрос [айди] - получить сообщение с вопросом под некоторым "
-            "номером и ответ на него\n"
-            "/добавить [текст ответа], затем [текст вопроса] - добавить вопрос "
-            "в конец списка, можно прикрепить файлики к сообщению\n"
-            "/помощь или /команды - это сообщение\n"
-            "\n"
-            "ещё есть /ответ [текст ответа], /вопрос (без аргументов!) и "
-            "/лидерборд, это уже для всех"
-        )
+        if self.message.from_id in self.bot.config.admin_ids:
+            await self.answer(
+                "/удалить - удалить последний вопрос из списка вопросов\n"
+                "/вопросы - получить список вопросов в формате"
+                "{айди}. {текст сообщения с вопросом} | {ответ}\n"
+                "/вопрос [айди] - получить сообщение с вопросом под некоторым "
+                "номером и ответ на него\n"
+                "/добавить [текст ответа], затем [текст вопроса] - добавить "
+                "вопрос в конец списка, можно прикрепить файлики к сообщению\n"
+                "/помощь или /команды - это сообщение\n"
+                "\n"
+                "ещё есть /ответ [текст ответа], /вопрос (без аргументов!) и "
+                "/лидерборд, это уже для всех"
+            )
+        else:
+            await self.answer(
+                "/ответ [текст ответа] - ответить на текущий вопрос\n"
+                "/вопрос - получить текущий вопрос\n"
+                "/лидерборд - получить лидерборд"
+            )
 
 
 @handlers_collector.add(r"лидерборд")
 class GetLeaderboard(UsersCommandHandler):
 
     async def handle_message(self) -> None:
-        users = (
-            self.bot.db_session
-            .query(models.User)
-            .order_by(desc(models.User.vk_id))
-            .order_by(desc(models.User.time_spent_on_solutions_in_seconds))
-            .all()
-        )
-        if users:
-            users_vk_info = await self.bot.vk_client.api.users.get(
-                user_ids=[user.vk_id for user in users]
-            )
-            await self.answer("\n".join(
-                f"{user_number}. "
-                f"[id{user_from_vk.id}|{user_from_vk.first_name} "
-                f"{user_from_vk.last_name}] - {user.score} правильных ответов"
-                for user_from_vk, (user_number, user) in zip(
-                    users_vk_info, enumerate(users, start=1)
-                )
-            ))
-        else:
-            await self.answer("Пока никто не участвовал в квесте!")
+        leaderboard = await self.bot.get_leaderboard()
+        await self.answer(leaderboard or "Пока никто не участвовал в квесте!")
