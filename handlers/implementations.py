@@ -139,7 +139,7 @@ class AddCommand(AdminsCommandHandler):
 class GetHelp(UsersCommandHandler):
 
     async def handle_message(self) -> None:
-        if self.message.from_id in self.bot.config.admin_ids:
+        if self.bot.message_is_from_admin(self.message):
             await self.answer(
                 "/удалить - удалить последний вопрос из списка вопросов\n"
                 "/вопросы - получить список вопросов в формате"

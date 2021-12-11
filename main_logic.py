@@ -110,6 +110,12 @@ class Bot:
                     forward_messages=question.question_message_id
                 )
 
+    def message_is_from_admin(self, message: vkbottle.bot.Message):
+        return (
+            message.from_id in self.config.admin_ids
+            and message.from_id == message.peer_id
+        )
+
     async def handle_new_message(self, message: vkbottle.bot.Message):
         try:
             question_answer = self.admin_id_to_question_answer[message.from_id]
@@ -119,7 +125,7 @@ class Bot:
                 for regex, handler_type in self.commands:
                     if (
                         not handler_type.is_for_admins()
-                        or message.from_id in self.config.admin_ids
+                        or self.message_is_from_admin(message)
                     ):
                         match = regex.fullmatch(text)
                         if match:
