@@ -149,9 +149,16 @@ class GetHelp(UsersCommandHandler):
                 "/добавить [текст ответа], затем [текст вопроса] - добавить "
                 "вопрос в конец списка, можно прикрепить файлики к сообщению\n"
                 "/помощь или /команды - это сообщение\n"
+                "/сбросить счётчик вопросов - команда намеренно настолько "
+                "длинная, и через ё. Потому что опасная. Она сбрасывает "
+                "счётчик вопросов до такого, какой стоял при запуске бота, "
+                "т.е., если не законфижено иначе, на первый вопрос. Поможет "
+                "при удалении тестового вопроса и добавлении новых, настоящих "
+                "вопросов\n"
                 "\n"
                 "ещё есть /ответ [текст ответа], /вопрос (без аргументов!) и "
-                "/лидерборд, это уже для всех"
+                "/лидерборд, это уже для всех. Ну и ещё есть /помощь и "
+                "/команды для юзеров, там сообщение меньше"
             )
         else:
             await self.answer(
@@ -167,3 +174,11 @@ class GetLeaderboard(UsersCommandHandler):
     async def handle_message(self) -> None:
         leaderboard = await self.bot.get_leaderboard()
         await self.answer(leaderboard or "Пока никто не участвовал в квесте!")
+
+
+@handlers_collector.add(r"сбросить счётчик вопросов")
+class ResetQuestionsCounter(AdminsCommandHandler):
+
+    async def handle_message(self) -> None:
+        self.bot.question_id = self.bot.config.starting_question_id
+        await self.answer("Счётчик сброшен!")
