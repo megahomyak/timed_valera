@@ -30,7 +30,7 @@ class Bot:
         question_date = utils.now()
         if question_date.hour > config.question_hour_in_moscow_timezone:
             question_date += datetime.timedelta(days=1)
-        question_date.replace(
+        question_date = question_date.replace(
             hour=config.question_hour_in_moscow_timezone,
             minute=0,
             second=0,
