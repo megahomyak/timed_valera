@@ -74,7 +74,13 @@ class Bot:
             return "\n".join(
                 f"{user_number}. "
                 f"[id{user_from_vk.id}|{user_from_vk.first_name} "
-                f"{user_from_vk.last_name}] - {user.score} правильных ответов"
+                f"{user_from_vk.last_name}] - {user.score} "
+                + utils.decline_word(
+                    user.score, (
+                        "правильный ответ", "правильных ответа",
+                        "правильных ответов"
+                    )
+                )
                 for user_from_vk, (user_number, user) in zip(
                     users_vk_info, enumerate(users, start=1)
                 )
