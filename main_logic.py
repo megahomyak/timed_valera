@@ -124,7 +124,9 @@ class Bot:
 
     async def handle_new_message(self, message: vkbottle.bot.Message):
         try:
-            question_answer = self.admin_id_to_question_answer[message.from_id]
+            question_answer = self.admin_id_to_question_answer.pop(
+                message.from_id
+            )
         except KeyError:
             if message.text.startswith("/"):
                 text = message.text[1:]
@@ -148,7 +150,6 @@ class Bot:
             )
             self.db_session.add(question)
             self.db_session.commit()
-            del self.admin_id_to_question_answer[message.from_id]
             await self.send_to_user(
                 message.peer_id,
                 f"Вопрос успешно добавлен! (ID: {question.id})"
