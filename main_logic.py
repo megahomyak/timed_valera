@@ -103,7 +103,7 @@ class Bot:
                         "Квест завершён! Лидерборд:\n"
                         + await self.get_leaderboard()
                     )
-                return
+                    return
             else:
                 self.current_question_info = CurrentQuestionInfo(
                     question=question,
