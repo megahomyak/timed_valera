@@ -101,7 +101,7 @@ class GetCurrentQuestion(UsersCommandHandler):
         else:
             question = self.bot.current_question_info.question
             await self.answer(
-                f"Текущий вопрос (№{question.id})",
+                f"Текущий вопрос (№{question.id}):",
                 forward_messages=[question.question_message_id]
             )
 
