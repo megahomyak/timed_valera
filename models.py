@@ -6,7 +6,7 @@ DeclarativeBase = declarative_base()
 
 
 class User(DeclarativeBase):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
     vk_id = Column(Integer, primary_key=True)
     score = Column(Integer, nullable=False)
