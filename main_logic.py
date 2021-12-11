@@ -27,15 +27,15 @@ class Bot:
         vk_client.on.message()(self.handle_new_message)
         self.vk_client = vk_client
         self.question_id = self.config.starting_question_id
-        question_date = utils.now()
-        if question_date.hour > config.question_hour_in_moscow_timezone:
-            question_date += datetime.timedelta(days=1)
-        question_date = question_date.replace(
+        now = utils.now()
+        question_date = now.replace(
             hour=config.question_hour_in_moscow_timezone,
             minute=0,
             second=0,
             microsecond=0
         )
+        if now > question_date:
+            question_date += datetime.timedelta(days=1)
         self.next_question_date = question_date
         self.current_question_info: Optional[CurrentQuestionInfo] = None
         self.commands = handlers_collector
