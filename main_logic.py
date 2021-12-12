@@ -146,7 +146,7 @@ class Bot:
         else:
             question = models.Question(
                 question_message_id=message.id, answers=[
-                    models.Answer(text=answer.strip().casefold())
+                    models.Answer(text=answer.strip())
                     for answer in question_answer.split("|")
                 ]
             )

@@ -19,7 +19,7 @@ class Answer(UsersCommandHandler):
             await self.answer("Отвечать можно только в личке!")
         elif (
             any(
-                answer_text == answer.text
+                answer_text == answer.text.casefold()
                 for answer in self.bot.current_question_info.question.answers
             )
         ):
