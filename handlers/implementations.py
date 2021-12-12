@@ -183,4 +183,4 @@ class ResetQuestionsCounter(AdminsCommandHandler):
         self.bot.db_session.query(models.Question).delete()
         self.bot.db_session.query(models.User).delete()
         self.bot.db_session.commit()
-        await self.answer("Счётчик сброшен!")
+        await self.answer("Всё сброшено!")
