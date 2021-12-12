@@ -179,6 +179,7 @@ class ResetQuestionsCounter(AdminsCommandHandler):
 
     async def handle_message(self) -> None:
         self.bot.question_id = self.bot.config.starting_question_id
+        self.bot.current_question_info = None
         self.bot.db_session.query(models.Question).delete()
         self.bot.db_session.query(models.User).delete()
         self.bot.db_session.commit()
