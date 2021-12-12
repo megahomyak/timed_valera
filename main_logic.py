@@ -108,12 +108,12 @@ class Bot:
                     question=question,
                     question_date=self.next_question_date
                 )
-                self.next_question_date += datetime.timedelta(days=1)
                 self.question_id += 1
                 await self.send_to_questions_chat(
                     f"Новый вопрос (№{question.id}):",
                     forward_messages=question.question_message_id
                 )
+            self.next_question_date += datetime.timedelta(days=1)
 
     def message_is_from_admin(self, message: vkbottle.bot.Message):
         return (
