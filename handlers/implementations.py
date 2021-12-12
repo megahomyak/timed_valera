@@ -12,13 +12,16 @@ handlers_collector = HandlersCollector()
 class Answer(UsersCommandHandler):
 
     async def handle_message(self, answer_text: str):
+        answer_text = answer_text.casefold()
         if self.bot.current_question_info is None:
             await self.answer("Квест сейчас не идёт!")
         elif self.message.peer_id != self.message.from_id:
             await self.answer("Отвечать можно только в личке!")
         elif (
-            self.bot.current_question_info.question.answer_text
-            == answer_text
+            any(
+                answer_text == answer.text
+                for answer in self.bot.current_question_info.question.answers
+            )
         ):
             user: models.User = self.bot.db_session.query(
                 models.User
@@ -83,7 +86,8 @@ class ListQuestions(AdminsCommandHandler):
             )
             await self.answer("\n".join(
                 f"{question.id}. "
-                f"{question_message.text} | {question.answer_text}"
+                f"{question_message.text} | "
+                + " | ".join(answer.text for answer in question.answers)
                 for question, question_message in zip(
                     questions, question_messages.items
                 )
@@ -115,8 +119,11 @@ class GetQuestionByID(AdminsCommandHandler):
         if question is None:
             await self.answer(f"Вопроса с ID {question_id} нет!")
         else:
+            answers_string = " | ".join(
+                answer.text for answer in question.answers
+            )
             await self.answer(
-                f"Вопрос с ID {question_id} (ответ: {question.answer_text}):",
+                f"Вопрос с ID {question_id} (ответы: {answers_string}):",
                 forward_messages=question.question_message_id
             )
 
@@ -143,11 +150,13 @@ class GetHelp(UsersCommandHandler):
             await self.answer(
                 "/удалить - удалить последний вопрос из списка вопросов\n"
                 "/вопросы - получить список вопросов в формате "
-                "{айди}. {текст сообщения с вопросом} | {ответ}\n"
+                "{айди}. {текст сообщения с вопросом} | {ответ 1} | {ответ 2} "
+                "| {и так далее}\n"
                 "/вопрос [айди] - получить сообщение с вопросом под некоторым "
-                "номером и ответ на него\n"
-                "/добавить [текст ответа], затем [текст вопроса] - добавить "
-                "вопрос в конец списка, можно прикрепить файлики к сообщению\n"
+                "номером и ответы на него\n"
+                "/добавить [текст ответов через | ], затем [текст вопроса] - "
+                "добавить вопрос в конец списка, можно прикрепить файлики к "
+                "сообщению (логично, ведь оно будет пересылаться)\n"
                 "/помощь или /команды - это сообщение\n"
                 "/сбросить всё - опасная команда, сбрасывает вообще всё - и "
                 "лидерборд, и вопросы, и счётчик текущего вопроса, будто "
@@ -180,7 +189,7 @@ class ResetQuestionsCounter(AdminsCommandHandler):
     async def handle_message(self) -> None:
         self.bot.question_id = self.bot.config.starting_question_id
         self.bot.current_question_info = None
-        self.bot.db_session.query(models.Question).delete()
-        self.bot.db_session.query(models.User).delete()
+        for model_to_delete in (models.Answer, models.Question, models.User):
+            self.bot.db_session.query(model_to_delete).delete()
         self.bot.db_session.commit()
         await self.answer("Всё сброшено!")

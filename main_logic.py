@@ -145,7 +145,10 @@ class Bot:
                     )
         else:
             question = models.Question(
-                answer_text=question_answer, question_message_id=message.id
+                question_message_id=message.id, answers=[
+                    models.Answer(text=answer.strip().casefold())
+                    for answer in question_answer.split("|")
+                ]
             )
             self.db_session.add(question)
             self.db_session.commit()

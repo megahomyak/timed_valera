@@ -1,6 +1,6 @@
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, relationship
 
 DeclarativeBase = declarative_base()
 
@@ -19,7 +19,20 @@ class Question(DeclarativeBase):
 
     id = Column(Integer, primary_key=True)
     question_message_id = Column(Integer, nullable=False)
-    answer_text = Column(String, nullable=False)
+
+    answers = relationship(
+        "Answer", back_populates="question", cascade="all, delete"
+    )
+
+
+class Answer(DeclarativeBase):
+    __tablename__ = "answers"
+
+    id = Column(Integer, primary_key=True)
+    question_id = Column(Integer, ForeignKey("questions.id"), nullable=False)
+    text = Column(String, nullable=False)
+
+    question = relationship("Question", back_populates="answers")
 
 
 def get_session(database_file_name="sqlite:///db.db"):
