@@ -116,10 +116,7 @@ class Bot:
             self.next_question_date += datetime.timedelta(days=1)
 
     def message_is_from_admin(self, message: vkbottle.bot.Message):
-        return (
-            message.from_id in self.config.admin_ids
-            and message.from_id == message.peer_id
-        )
+        return message.peer_id == self.config.admins_peer_id
 
     async def handle_new_message(self, message: vkbottle.bot.Message):
         try:
