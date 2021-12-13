@@ -13,5 +13,4 @@ class Config:
     @classmethod
     def make(cls, filename="config.json"):
         fields = json.load(open(filename, encoding="utf-8"))
-        fields["admin_ids"] = set(fields["admin_ids"])
         return cls(**fields)
