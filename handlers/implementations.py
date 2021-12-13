@@ -13,10 +13,10 @@ class Answer(UsersCommandHandler):
 
     async def handle_message(self, answer_text: str):
         answer_text = answer_text.casefold()
-        if self.bot.current_question_info is None:
-            await self.answer("Квест сейчас не идёт!")
-        elif self.message.peer_id != self.message.from_id:
+        if self.message.peer_id != self.message.from_id:
             await self.answer("Отвечать можно только в личке!")
+        elif self.bot.current_question_info is None:
+            await self.answer("Квест сейчас не идёт!")
         elif (
             any(
                 answer_text == answer.text.casefold()
