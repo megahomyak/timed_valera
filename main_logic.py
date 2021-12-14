@@ -117,7 +117,7 @@ class Bot:
         else:
             self.current_question_info = CurrentQuestionInfo(
                 question=question,
-                question_date=self.next_question_date
+                question_date=utils.now()
             )
             self.question_id += 1
             await self.send_to_questions_chat(
