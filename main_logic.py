@@ -13,7 +13,7 @@ import models
 import utils
 from config import Config
 from current_question_info import CurrentQuestionInfo
-from exceptions import QuestEnded
+from exceptions import QuestEnded, NoQuestionsProvided
 from handlers.implementations import handlers_collector
 
 
@@ -96,6 +96,8 @@ class Bot:
             )
             try:
                 await self.roll_a_question(manual=False)
+            except NoQuestionsProvided:
+                pass
             except QuestEnded:
                 return
 
@@ -111,6 +113,7 @@ class Bot:
                     + await self.get_leaderboard()
                 )
                 raise QuestEnded
+            raise NoQuestionsProvided
         else:
             self.current_question_info = CurrentQuestionInfo(
                 question=question,

@@ -2,7 +2,7 @@ from sqlalchemy import desc
 
 import models
 import utils
-from exceptions import QuestEnded
+from exceptions import QuestEnded, NoQuestionsProvided
 from handlers.base_handler import AdminsCommandHandler, UsersCommandHandler
 from handlers.handlers_collector import HandlersCollector
 
@@ -207,4 +207,7 @@ class RollAQuestion(AdminsCommandHandler):
             await self.bot.roll_a_question(manual=True)
         except QuestEnded:
             pass
-        await self.answer("Ролл совершён!")
+        except NoQuestionsProvided:
+            await self.answer("Так вопросов-то и не было! Роллить нечего!")
+        else:
+            await self.answer("Ролл совершён!")
