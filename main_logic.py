@@ -29,10 +29,11 @@ class Bot:
         self.vk_client = vk_client
         self.question_id = self.config.starting_question_id
         now = utils.now()
-        question_date = datetime.datetime.combine(
-            date=now,
-            time=datetime.time(hour=config.question_hour_in_moscow_timezone),
-            tzinfo=utils.MOSCOW_TIMEZONE
+        question_date = now.replace(
+            hour=config.question_hour_in_moscow_timezone,
+            minute=0,
+            second=0,
+            microsecond=0
         )
         if now > question_date:
             question_date += datetime.timedelta(days=1)
