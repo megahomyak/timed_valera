@@ -186,7 +186,7 @@ class GetLeaderboard(UsersCommandHandler):
 
     async def handle_message(self) -> None:
         leaderboard = await self.bot.get_leaderboard()
-        await self.answer(leaderboard or "Пока никто не участвовал в квесте!")
+        await self.answer(leaderboard or "Пока никто не ответил правильно!")
 
 
 @handlers_collector.add(r"сбросить всё")
