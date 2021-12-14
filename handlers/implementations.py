@@ -165,6 +165,8 @@ class GetHelp(UsersCommandHandler):
                 "пригодиться при начале нового квеста\n"
                 "/ролл - роллит вопрос, не дожидаясь таймера (таймер роллит "
                 "дальше)"
+                "/ролл час:минута - то же, что и /ролл, но ещё и ставит время "
+                "вопроса на сегодняшний день и указанное время"
                 "\n"
                 "ещё есть /ответ [текст ответа], /вопрос (без аргументов!) и "
                 "/лидерборд, это уже для всех. Ну и ещё есть /помощь и "
@@ -202,12 +204,29 @@ class ResetQuestionsCounter(AdminsCommandHandler):
 @handlers_collector.add(r"ролл")
 class RollAQuestion(AdminsCommandHandler):
 
-    async def handle_message(self) -> None:
+    async def handle_message(self, date_to_set=None) -> None:
         try:
-            await self.bot.roll_a_question(manual=True)
+            await self.bot.roll_a_question(manual=True, date_to_set=date_to_set)
         except QuestEnded:
             pass
         except NoQuestionsProvided:
             await self.answer("Так вопросов-то и не было! Роллить нечего!")
         else:
             await self.answer("Ролл совершён!")
+
+
+@handlers_collector.add(r"ролл (\d+):(\d+)")
+class RollAQuestionWithTime(AdminsCommandHandler):
+
+    async def handle_message(self, hour: str, minute: str) -> None:
+        hour, minute = int(hour), int(minute)
+        date = utils.now()
+        try:
+            date = date.replace(
+                hour=hour, minute=minute, second=0, microsecond=0
+            )
+        except ValueError:
+            await self.answer("Чё-то не так со временем")
+        else:
+            # noinspection PyTypeChecker
+            await RollAQuestion.handle_message(self, date_to_set=date)

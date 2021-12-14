@@ -101,7 +101,8 @@ class Bot:
             except QuestEnded:
                 return
 
-    async def roll_a_question(self, manual: bool):
+    async def roll_a_question(
+            self, manual: bool, date_to_set: datetime.datetime = None):
         question: models.Question = (
             self.db_session.query(models.Question).get(self.question_id)
         )
@@ -117,7 +118,7 @@ class Bot:
         else:
             self.current_question_info = CurrentQuestionInfo(
                 question=question,
-                question_date=utils.now()
+                question_date=date_to_set or utils.now()
             )
             self.question_id += 1
             await self.send_to_questions_chat(
