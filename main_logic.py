@@ -35,6 +35,7 @@ class Bot:
         )
         if now > question_date:
             question_date += datetime.timedelta(days=1)
+        print(question_date)
         self.next_question_date = question_date
         self.current_question_info: Optional[CurrentQuestionInfo] = None
         self.commands = handlers_collector
@@ -92,27 +93,31 @@ class Bot:
             await asyncio.sleep(
                 (self.next_question_date - utils.now()).total_seconds()
             )
-            question: models.Question = (
-                self.db_session.query(models.Question).get(self.question_id)
-            )
-            if question is None:
-                self.current_question_info = None
-                if self.question_id != self.config.starting_question_id:
-                    await self.send_to_questions_chat(
-                        "Квест завершён! Лидерборд:\n"
-                        + await self.get_leaderboard()
-                    )
-                    return
-            else:
-                self.current_question_info = CurrentQuestionInfo(
-                    question=question,
-                    question_date=self.next_question_date
-                )
-                self.question_id += 1
+            await self.roll_a_question(manual=False)
+
+    async def roll_a_question(self, manual: bool):
+        question: models.Question = (
+            self.db_session.query(models.Question).get(self.question_id)
+        )
+        if question is None:
+            self.current_question_info = None
+            if self.question_id != self.config.starting_question_id:
                 await self.send_to_questions_chat(
-                    f"Новый вопрос (№{question.id}):",
-                    forward_messages=question.question_message_id
+                    "Квест завершён! Лидерборд:\n"
+                    + await self.get_leaderboard()
                 )
+                return
+        else:
+            self.current_question_info = CurrentQuestionInfo(
+                question=question,
+                question_date=self.next_question_date
+            )
+            self.question_id += 1
+            await self.send_to_questions_chat(
+                f"Новый вопрос (№{question.id}):",
+                forward_messages=question.question_message_id
+            )
+        if not manual:
             self.next_question_date += datetime.timedelta(days=1)
 
     def message_is_from_admin(self, message: vkbottle.bot.Message):

@@ -162,6 +162,8 @@ class GetHelp(UsersCommandHandler):
                 "лидерборд, и вопросы, и счётчик текущего вопроса, будто "
                 "боту стёрли бд (по факту затирает все таблицы). Может "
                 "пригодиться при начале нового квеста\n"
+                "/ролл - роллит вопрос, не дожидаясь таймера (таймер роллит "
+                "дальше)"
                 "\n"
                 "ещё есть /ответ [текст ответа], /вопрос (без аргументов!) и "
                 "/лидерборд, это уже для всех. Ну и ещё есть /помощь и "
@@ -194,3 +196,11 @@ class ResetQuestionsCounter(AdminsCommandHandler):
             self.bot.db_session.query(model_to_delete).delete()
         self.bot.db_session.commit()
         await self.answer("Всё сброшено!")
+
+
+@handlers_collector.add(r"ролл")
+class RollAQuestion(AdminsCommandHandler):
+
+    async def handle_message(self) -> None:
+        await self.bot.roll_a_question(manual=True)
+        await self.answer("Ролл совершён!")
