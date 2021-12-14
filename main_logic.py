@@ -13,6 +13,7 @@ import models
 import utils
 from config import Config
 from current_question_info import CurrentQuestionInfo
+from exceptions import QuestEnded
 from handlers.implementations import handlers_collector
 
 
@@ -92,7 +93,10 @@ class Bot:
             await asyncio.sleep(
                 (self.next_question_date - utils.now()).total_seconds()
             )
-            await self.roll_a_question(manual=False)
+            try:
+                await self.roll_a_question(manual=False)
+            except QuestEnded:
+                return
 
     async def roll_a_question(self, manual: bool):
         question: models.Question = (
@@ -105,7 +109,7 @@ class Bot:
                     "Квест завершён! Лидерборд:\n"
                     + await self.get_leaderboard()
                 )
-                return
+                raise QuestEnded
         else:
             self.current_question_info = CurrentQuestionInfo(
                 question=question,

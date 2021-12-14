@@ -2,6 +2,7 @@ from sqlalchemy import desc
 
 import models
 import utils
+from exceptions import QuestEnded
 from handlers.base_handler import AdminsCommandHandler, UsersCommandHandler
 from handlers.handlers_collector import HandlersCollector
 
@@ -202,5 +203,8 @@ class ResetQuestionsCounter(AdminsCommandHandler):
 class RollAQuestion(AdminsCommandHandler):
 
     async def handle_message(self) -> None:
-        await self.bot.roll_a_question(manual=True)
+        try:
+            await self.bot.roll_a_question(manual=True)
+        except QuestEnded:
+            pass
         await self.answer("Ролл совершён!")
