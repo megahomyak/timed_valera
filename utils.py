@@ -10,10 +10,10 @@ def now():
 
 
 def decline_word(amount, forms):
-    amount %= 10
-    if amount == 1:
+    last_digit = amount % 10
+    if last_digit == 1 or 11 <= amount <= 19:
         return forms[0]
-    elif 2 <= amount <= 4:
+    elif 2 <= last_digit <= 4:
         return forms[1]
     else:
         return forms[2]
