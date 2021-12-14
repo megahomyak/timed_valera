@@ -116,7 +116,10 @@ class Bot:
             self.next_question_date += datetime.timedelta(days=1)
 
     def message_is_from_admin(self, message: vkbottle.bot.Message):
-        return message.peer_id == self.config.admins_peer_id
+        return (
+            message.peer_id == message.from_id
+            and message.peer_id in self.config.admin_ids
+        )
 
     async def handle_new_message(self, message: vkbottle.bot.Message):
         try:
@@ -142,7 +145,7 @@ class Bot:
                     )
         else:
             question = models.Question(
-                question_message_id=message.get_message_id(), answers=[
+                question_message_id=message.id, answers=[
                     models.Answer(text=answer.strip())
                     for answer in question_answer.split("|")
                 ]
