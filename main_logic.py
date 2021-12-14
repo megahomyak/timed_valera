@@ -35,7 +35,6 @@ class Bot:
         )
         if now > question_date:
             question_date += datetime.timedelta(days=1)
-        print(question_date)
         self.next_question_date = question_date
         self.current_question_info: Optional[CurrentQuestionInfo] = None
         self.commands = handlers_collector
