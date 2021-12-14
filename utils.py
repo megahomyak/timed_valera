@@ -10,6 +10,7 @@ def now():
 
 
 def decline_word(amount, forms):
+    amount %= 10
     if amount == 1:
         return forms[0]
     elif 2 <= amount <= 4:
