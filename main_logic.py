@@ -6,7 +6,7 @@ from typing import Optional, Dict, List
 
 import loguru
 import vkbottle.bot
-from sqlalchemy import desc
+from sqlalchemy import desc, asc
 from sqlalchemy.orm import Session
 
 import models
@@ -64,8 +64,8 @@ class Bot:
         users = (
             self.db_session
             .query(models.User)
-            .order_by(desc(models.User.vk_id))
-            .order_by(desc(models.User.time_spent_on_solutions_in_seconds))
+            .order_by(desc(models.User.score))
+            .order_by(asc(models.User.time_spent_on_solutions_in_seconds))
             .all()
         )
         if users:
